@@ -12,7 +12,6 @@ services:
       - /dev/dri:/dev/dri
     group_add:
       - video
-      - render
     restart: unless-stopped
     environment:
       - PYTHONUNBUFFERED=1
