@@ -1,9 +1,14 @@
 FROM python:3.13-slim
 
-# Install ffmpeg for video processing
+# Install ffmpeg and Intel QSV/VA-API drivers for hardware acceleration
 RUN apt-get update && \
-    apt-get install -y ffmpeg && \
-    apt-get clean && \
+    apt-get install -y \
+    ffmpeg \
+    intel-media-va-driver-non-free \
+    vainfo \
+    libva-drm2 \
+    libva2 \
+    && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Set working directory
