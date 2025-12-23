@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[oc]
+*.egg-info
+.venv/
+.mypy_cache/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Project files
+temp/*
+output/*
+!temp/.gitkeep
+!output/.gitkeep
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+README.md

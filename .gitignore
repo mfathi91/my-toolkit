@@ -1,0 +1,25 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# VS Code
+.vscode/PythonImportHelper-v2-Completion.json
+
+# IntelliJ
+.idea
+
+# macOS
+.DS_Store
+
+# Project-specific ignores
+output/
+temp/
+logs/
+*.log

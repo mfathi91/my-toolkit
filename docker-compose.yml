@@ -1,0 +1,13 @@
+services:
+  my-toolkit:
+    image: ghcr.io/mfathi91/my-toolkit:latest
+    pull_policy: always
+    container_name: my-toolkit
+    ports:
+      - "8765:8765"
+    volumes:
+      - ./temp:/app/temp
+      - ./output:/app/output
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
