@@ -26,6 +26,22 @@ logger = logging.getLogger(__name__)
 job_status: dict[str, dict[str, Any]] = {}
 
 
+def check_vaapi_available() -> bool:
+  """Check if VA-API is actually available."""
+  try:
+    # Try to initialize VA-API device
+    result = subprocess.run(
+      ["ffmpeg", "-hide_banner", "-init_hw_device", "vaapi=va:/dev/dri/renderD128", "-f", "lavfi", "-i", "nullsrc", "-frames:v", "1", "-f", "null", "-"],
+      capture_output=True,
+      text=True,
+      timeout=5,
+    )
+    return result.returncode == 0
+  except Exception as e:
+    logger.warning(f"Failed to check VA-API availability: {e}")
+    return False
+
+
 def get_hardware_encoder() -> tuple[str, str | None]:
   """
   Detect platform and return appropriate hardware encoder settings.
@@ -41,11 +57,16 @@ def get_hardware_encoder() -> tuple[str, str | None]:
     # Check if it's ARM64 (likely Docker on Mac) - use software encoding
     if machine in ["arm64", "aarch64"]:
       return "libx265", None
-    # Intel Quick Sync for x86_64 Linux (Beelink N100)
-    return "hevc_qsv", "qsv"
+    # Intel VA-API for x86_64 Linux - verify it's actually available
+    if check_vaapi_available():
+      logger.info("Intel VA-API hardware acceleration detected and available")
+      return "hevc_vaapi", "vaapi"
+    else:
+      logger.warning("VA-API not available, falling back to software encoding")
+      return "libx265", None
   elif system == "Windows":
-    # Intel Quick Sync on Windows
-    return "hevc_qsv", "qsv"
+    # Windows - use software encoding (VA-API not available on Windows)
+    return "libx265", None
   else:
     # Fallback to software encoding
     return "libx265", None
@@ -71,7 +92,10 @@ def process_video(job_id: str, filename: str, compression_mode: str = "standard"
   # Build FFmpeg command based on platform
   command = ["ffmpeg"]
 
-  if hwaccel:
+  # Initialize hardware device for VA-API
+  if hwaccel == "vaapi":
+    command.extend(["-init_hw_device", "vaapi=va:/dev/dri/renderD128", "-hwaccel", "vaapi", "-hwaccel_device", "va", "-hwaccel_output_format", "vaapi"])
+  elif hwaccel:
     command.extend(["-hwaccel", hwaccel])
 
   command.extend(["-i", str(temp_input)])
@@ -101,28 +125,28 @@ def process_video(job_id: str, filename: str, compression_mode: str = "standard"
           "65",  # Quality (0-100, higher = better)
         ]
       )
-  elif encoder == "hevc_qsv":
-    # Intel Quick Sync optimized settings
+  elif encoder == "hevc_vaapi":
+    # Intel VA-API optimized settings
     if compression_mode == "deep":
       command.extend(
         [
+          "-vf",
+          "format=nv12|vaapi,hwupload",  # Upload frames to GPU
           "-c:v",
-          "hevc_qsv",
-          "-global_quality",
-          "30",  # Lower quality for deep compression
-          "-preset",
-          "veryslow",
+          "hevc_vaapi",
+          "-qp",
+          "30",  # Higher QP for deep compression (0-51, higher = more compression)
         ]
       )
     else:
       command.extend(
         [
+          "-vf",
+          "format=nv12|vaapi,hwupload",  # Upload frames to GPU
           "-c:v",
-          "hevc_qsv",
-          "-global_quality",
-          "25",  # Quality: 1-51, lower = better
-          "-preset",
-          "slow",
+          "hevc_vaapi",
+          "-qp",
+          "25",  # Quality parameter (0-51, lower = better quality)
         ]
       )
   else:
