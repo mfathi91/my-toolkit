@@ -37,8 +37,14 @@ def get_hardware_encoder() -> tuple[str, str | None]:
   if system == "Darwin" and machine in ["arm64", "aarch64"]:
     # Apple Silicon (M1, M2, M3, M4)
     return "hevc_videotoolbox", "videotoolbox"
-  elif system == "Linux" or system == "Windows":
-    # Intel Quick Sync (Beelink N100)
+  elif system == "Linux":
+    # Check if it's ARM64 (likely Docker on Mac) - use software encoding
+    if machine in ["arm64", "aarch64"]:
+      return "libx265", None
+    # Intel Quick Sync for x86_64 Linux (Beelink N100)
+    return "hevc_qsv", "qsv"
+  elif system == "Windows":
+    # Intel Quick Sync on Windows
     return "hevc_qsv", "qsv"
   else:
     # Fallback to software encoding

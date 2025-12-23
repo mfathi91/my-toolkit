@@ -8,6 +8,11 @@ services:
     volumes:
       - ./temp:/app/temp
       - ./output:/app/output
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - render
     restart: unless-stopped
     environment:
       - PYTHONUNBUFFERED=1
