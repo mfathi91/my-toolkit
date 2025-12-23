@@ -1,15 +1,23 @@
 FROM python:3.13-slim
 
-# Install ffmpeg and Intel QSV/VA-API drivers for hardware acceleration
+# Install ffmpeg and VA-API libraries
 RUN apt-get update && \
     apt-get install -y \
     ffmpeg \
-    intel-media-va-driver-non-free \
     vainfo \
     libva-drm2 \
     libva2 \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Install Intel media driver only on amd64 (not needed for ARM)
+RUN if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
+    echo "deb http://deb.debian.org/debian trixie non-free non-free-firmware" > /etc/apt/sources.list.d/non-free.list && \
+    apt-get update && \
+    apt-get install -y intel-media-va-driver && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*; \
+    fi
 
 # Set working directory
 WORKDIR /app
