@@ -80,7 +80,9 @@ def process_video(job_id: str, filename: str, compression_mode: str = "standard"
   """
   temp_input = TEMP_DIR / filename
   mode_prefix = "deepcompressed_" if compression_mode == "deep" else "compressed_"
-  output_filename = f"{mode_prefix}{filename}"
+  # Always output as MP4 format
+  base_name = Path(filename).stem
+  output_filename = f"{mode_prefix}{base_name}.mp4"
   output_path = OUTPUT_DIR / output_filename
 
   # Update job status
@@ -319,12 +321,7 @@ async def download_file(filename: str, background_tasks: BackgroundTasks) -> Fil
         file_path.unlink()
         logger.info(f"🗑️  Cleaned up compressed file: {filename}")
 
-      # Try to find and remove the original temp file
-      original_filename = filename.replace("compressed_", "")
-      original_path = TEMP_DIR / original_filename
-      if original_path.exists():
-        original_path.unlink()
-        logger.info(f"🗑️  Cleaned up temp file: {original_filename}")
+      # Note: Original temp files are already cleaned up after compression
     except Exception as e:
       logger.warning(f"⚠️  Cleanup error: {e}")
 
