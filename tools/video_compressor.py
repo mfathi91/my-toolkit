@@ -257,7 +257,7 @@ async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = Fil
   encoder, _ = get_hardware_encoder()
   platform_name = {
     "hevc_videotoolbox": "Apple VideoToolbox (M4)",
-    "hevc_qsv": "Intel Quick Sync (N100)",
+    "hevc_vaapi": "Intel VA-API (N100)",
     "libx265": "Software (CPU)",
   }.get(encoder, "Unknown")
 
@@ -269,12 +269,11 @@ async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = Fil
       "bitrate": "2 Mbps" if compression_mode == "standard" else "1 Mbps (Deep)",
       "acceleration": "Hardware (VideoToolbox)",
     }
-  elif encoder == "hevc_qsv":
+  elif encoder == "hevc_vaapi":
     codec_details = {
       "codec": "HEVC (H.265)",
-      "quality": "CQ 25" if compression_mode == "standard" else "CQ 30 (Deep)",
-      "preset": "Slow" if compression_mode == "standard" else "Very Slow (Deep)",
-      "acceleration": "Hardware (Quick Sync)",
+      "quality": "QP 25" if compression_mode == "standard" else "QP 30 (Deep)",
+      "acceleration": "Hardware (Intel VA-API)",
     }
   else:
     codec_details = {
