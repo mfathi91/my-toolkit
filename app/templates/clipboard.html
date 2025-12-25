@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clipboard Manager - My Toolkit</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px 0;
+            width: 250px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 0 30px 20px;
+            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .sidebar-title a {
+            text-decoration: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-title a:hover {
+            opacity: 0.8;
+        }
+
+        .tool-list {
+            list-style: none;
+        }
+
+        .tool-item {
+            padding: 15px 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #666;
+            border-left: 3px solid transparent;
+        }
+
+        .tool-item:hover {
+            background: #f8f9ff;
+            color: #667eea;
+        }
+
+        .tool-item.active {
+            background: #f0f2ff;
+            color: #667eea;
+            border-left-color: #667eea;
+            font-weight: 600;
+        }
+
+        .tool-item a {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .tool-icon {
+            font-size: 20px;
+        }
+
+        .tool-name {
+            font-size: 14px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            flex: 1;
+            max-width: 900px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .clipboard-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f2ff;
+            color: #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #e8ebff;
+        }
+
+        .btn-danger {
+            background: #ffe0e0;
+            color: #c53030;
+        }
+
+        .btn-danger:hover {
+            background: #ffc9c9;
+        }
+
+        .message {
+            display: none;
+            margin-top: 15px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .status-bar {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-item {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .status-item strong {
+            color: #667eea;
+        }
+
+        .timer {
+            font-weight: 600;
+            color: #ee5a6f;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .container {
+                max-width: 100%;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title"><a href="/">🛠️ My Toolkit</a></div>
+        </div>
+        <ul class="tool-list">
+            <li class="tool-item">
+                <a href="/">
+                    <span class="tool-icon">🎥</span>
+                    <span class="tool-name">Video Compressor</span>
+                </a>
+            </li>
+            <li class="tool-item active">
+                <a href="/clipboard">
+                    <span class="tool-icon">📋</span>
+                    <span class="tool-name">Clipboard Manager</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <h1>📋 Clipboard Manager</h1>
+        <p class="subtitle">Set and retrieve clipboard content. Content auto-clears after 30 seconds.</p>
+
+        <div class="clipboard-section">
+            <div class="section-title">Clipboard Content</div>
+            <textarea id="clipboardText" placeholder="Enter text to save to clipboard..."></textarea>
+            
+            <div class="button-group">
+                <button class="btn btn-primary" id="setBtn">💾 Set Clipboard</button>
+                <button class="btn btn-secondary" id="getBtn">📥 Get Clipboard</button>
+                <button class="btn btn-danger" id="clearBtn">🗑️ Clear Clipboard</button>
+            </div>
+
+            <div class="message" id="message"></div>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-item">
+                <strong>Status:</strong> <span id="status">Empty</span>
+            </div>
+            <div class="status-item">
+                <strong>Auto-clear in:</strong> <span id="timer" class="timer">--</span>
+            </div>
+            <div class="status-item">
+                <strong>Characters:</strong> <span id="charCount">0</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const clipboardText = document.getElementById('clipboardText');
+        const setBtn = document.getElementById('setBtn');
+        const getBtn = document.getElementById('getBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const message = document.getElementById('message');
+        const status = document.getElementById('status');
+        const timer = document.getElementById('timer');
+        const charCount = document.getElementById('charCount');
+
+        let clearCountdown = null;
+        let clearTime = null;
+
+        // Update character count
+        clipboardText.addEventListener('input', () => {
+            charCount.textContent = clipboardText.value.length;
+        });
+
+        // Set clipboard content
+        setBtn.addEventListener('click', async () => {
+            const text = clipboardText.value.trim();
+            
+            if (!text) {
+                showMessage('Please enter some text first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/clipboard/clip?text=' + encodeURIComponent(text), {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showMessage('✅ Clipboard content set successfully!', 'success');
+                    status.textContent = 'Active';
+                    startClearCountdown();
+                } else {
+                    showMessage('❌ Failed to set clipboard content', 'error');
+                }
+            } catch (error) {
+                showMessage('❌ An error occurred', 'error');
+            }
+        });
+
+        // Get clipboard content
+        getBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/clipboard/clip');
+                const data = await response.json();
+
+                if (data.text) {
+                    clipboardText.value = data.text;
+                    charCount.textContent = data.text.length;
+                    showMessage('✅ Clipboard content retrieved!', 'success');
+                    status.textContent = 'Active';
+                    // Check if there's content and start countdown
+                    checkClipboardStatus();
+                } else {
+                    clipboardText.value = '';
+                    charCount.textContent = '0';
+                    showMessage('ℹ️ Clipboard is empty', 'info');
+                    status.textContent = 'Empty';
+                    stopClearCountdown();
+                }
+            } catch (error) {
+                showMessage('❌ Failed to retrieve clipboard content', 'error');
+            }
+        });
+
+        // Clear clipboard content manually
+        clearBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/clipboard/clip?text=', {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    clipboardText.value = '';
+                    charCount.textContent = '0';
+                    showMessage('✅ Clipboard cleared!', 'success');
+                    status.textContent = 'Empty';
+                    stopClearCountdown();
+                }
+            } catch (error) {
+                showMessage('❌ Failed to clear clipboard', 'error');
+            }
+        });
+
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = 'message show ' + type;
+            
+            setTimeout(() => {
+                message.classList.remove('show');
+            }, 5000);
+        }
+
+        function startClearCountdown() {
+            clearTime = Date.now() + 30000; // 30 seconds from now
+            stopClearCountdown(); // Clear any existing countdown
+            
+            clearCountdown = setInterval(() => {
+                const remaining = Math.max(0, Math.ceil((clearTime - Date.now()) / 1000));
+                timer.textContent = remaining + 's';
+                
+                if (remaining === 0) {
+                    timer.textContent = '--';
+                    status.textContent = 'Empty';
+                    stopClearCountdown();
+                    showMessage('ℹ️ Clipboard auto-cleared after 30 seconds', 'info');
+                }
+            }, 100);
+        }
+
+        function stopClearCountdown() {
+            if (clearCountdown) {
+                clearInterval(clearCountdown);
+                clearCountdown = null;
+                timer.textContent = '--';
+            }
+        }
+
+        async function checkClipboardStatus() {
+            try {
+                const response = await fetch('/clipboard/clip');
+                const data = await response.json();
+                
+                if (data.text) {
+                    status.textContent = 'Active';
+                    // We don't know exactly when it was set, so we can't show accurate countdown
+                    // unless we enhance the API
+                } else {
+                    status.textContent = 'Empty';
+                }
+            } catch (error) {
+                console.error('Failed to check clipboard status:', error);
+            }
+        }
+
+        // Check clipboard status on load
+        checkClipboardStatus();
+    </script>
+</body>
+</html>

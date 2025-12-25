@@ -1,10 +1,19 @@
 import asyncio
+from pathlib import Path
 
 from fastapi import APIRouter
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from starlette.requests import Request
 
 router = APIRouter(prefix="/clipboard", tags=["clipboard"])
 clipboard_content = ""
 clear_task = None
+
+# Setup templates
+BASE_DIR = Path(__file__).resolve().parent.parent
+TEMPLATE_DIR = BASE_DIR / "app" / "templates"
+templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
 
 
 async def clear_clipboard_after_delay():
@@ -12,6 +21,12 @@ async def clear_clipboard_after_delay():
   await asyncio.sleep(30)
   global clipboard_content
   clipboard_content = ""
+
+
+@router.get("/", response_class=HTMLResponse)
+async def clipboard_ui(request: Request) -> HTMLResponse:
+  """Serve the clipboard UI page"""
+  return templates.TemplateResponse("clipboard.html", {"request": request})
 
 
 @router.get("/clip")
