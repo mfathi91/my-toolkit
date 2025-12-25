@@ -6,6 +6,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.requests import Request
 
+from tools.clipboard import router as clipboard_router
 from tools.video_compressor import router as video_router
 
 # Configure logging
@@ -24,6 +25,7 @@ templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
 
 # Include tool routers
 app.include_router(video_router)
+app.include_router(clipboard_router)
 
 
 @app.get("/", response_class=HTMLResponse)
